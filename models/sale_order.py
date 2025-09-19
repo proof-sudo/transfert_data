@@ -11,18 +11,11 @@ class SaleOrder(models.Model):
     
     @api.multi
     def action_confirm(self):
-        for order in self:
-            _logger.info("Sale Confirm Log: Pré-confirmation pour SO%s (id=%s)", order.name or '?', order.id)
-        try:
-            res = super(SaleOrder, self).action_confirm()
-        except Exception as e:
-            for order in self:
-                _logger.exception("Sale Confirm Log: ERREUR pendant la confirmation de SO%s (id=%s): %s",
-                                  order.name or '?', order.id, e)
-            raise
-        for order in self:
-            _logger.info("Sale Confirm Log: Confirmation effectuée pour SO%s (id=%s)", order.name or '?', order.id)
-        return res
+        # Debug : affiche dans les logs que l'overwrite fonctionne
+        _logger.info("✅ DEBUG : action_confirm overwrite fonctionne pour la commande %s", self.name)
+        
+        # Continue le processus normal de confirmation
+        return super(SaleOrder, self).action_confirm()
 
     # @api.multi
     # def action_confirm(self):
