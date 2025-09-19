@@ -1,35 +1,45 @@
-# -*- coding: utf-8 -*-
-from odoo import models, api, SUPERUSER_ID
+from odoo import models, api, fields
 import logging
 import requests
 import json
+import threading
 
 _logger = logging.getLogger(__name__)
 
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
+    transfer_state = fields.Selection([
+        ('pending', 'Pending'),
+        ('done', 'Done')
+    ], string="Transfer State", default='pending')
+
     @api.multi
     def action_invoice_open(self):
         res = super(AccountInvoice, self).action_invoice_open()
-        for inv in self:
-            try:
-                inv._send_full_record_to_external_odoo()
-            except Exception as e:
-                _logger.exception("Erreur transfert Invoice %s : %s", inv.number, e)
+        for invoice in self:
+            _logger.info("Invoice %s validée, transfert asynchrone prévu", invoice.number)
+            threading.Thread(target=self._send_full_record_to_external_odoo_safe, args=(invoice.id,)).start()
         return res
 
-    def _send_full_record_to_external_odoo(self):
+    @api.model
+    def _send_full_record_to_external_odoo_safe(self, invoice_id):
+        invoice = self.browse(invoice_id)
+        try:
+            invoice._send_to_external_odoo()
+        except Exception as e:
+            _logger.exception("Erreur envoi asynchrone Invoice %s : %s", invoice.number, e)
+
+    @api.multi
+    def _send_to_external_odoo(self):
         self.ensure_one()
         try:
             fields = list(self._fields.keys())
             data = self.read(fields)[0]
 
             base_url = self.env['transfer_to_odoo17.config'].sudo().search([], limit=1).external_odoo_base_url
-            _logger.info("URL récupérée pour Invoice %s : %s", self.number, base_url)
-
             if not base_url:
-                _logger.error("Aucune URL configurée dans transfer_to_odoo17.config. Invoice %s non envoyé", self.number)
+                _logger.error("Aucune URL configurée. Invoice %s non envoyé", self.number)
                 return False
 
             url = "{}/odoo_sync/account_invoice".format(base_url)
@@ -39,7 +49,8 @@ class AccountInvoice(models.Model):
             response = requests.post(url, headers=headers, data=json.dumps(data, default=str), timeout=15)
 
             if response.status_code == 200:
-                _logger.info("Invoice %s envoyé avec succès à l'Odoo externe", self.number)
+                _logger.info("Invoice %s envoyé avec succès", self.number)
+                self.transfer_state = 'done'
             else:
                 _logger.error("Erreur %s envoi Invoice %s : %s", response.status_code, self.number, response.text)
 

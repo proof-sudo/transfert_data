@@ -9,6 +9,10 @@
                 <sheet>
                     <group>
                         <field name="external_odoo_base_url"/>
+                        <button name="action_mark_existing_done"
+                                string="Marquer anciennes commandes et factures comme transférées"
+                                type="object"
+                                class="btn-primary"/>
                     </group>
                     
                 </sheet>
