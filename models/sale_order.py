@@ -21,10 +21,18 @@ class SaleOrder(models.Model):
     #         except Exception as e:
     #             _logger.exception("❌ Erreur transfert SaleOrder %s : %s", order.name, e)
     #     return res
-    @api.multi
-    def action_confirm(self):
+    def _register_hook(self):
+            """Patch action_confirm pour test visible, avant tout autre override"""
+            original_confirm = super(SaleOrder, self).action_confirm
+
+            def patched_confirm(*args, **kwargs):
+                _logger.info(">>> DEBUG : action_confirm forcé pour %s", self.mapped('name'))
+                raise UserError("🚨 DEBUG : override forcé pour %s" % ", ".join(self.mapped('name')))
+                # return original_confirm(*args, **kwargs)  # décommenter pour continuer après test
+
+            # 🔹 On remplace l'action_confirm sur le modèle
+            self.action_confirm = patched_confirm
         
-        raise UserError("🚨 DEBUG: action_confirm surcharge active pour %s" % ", ".join(self.mapped('name')))
 
 
     def _send_full_record_to_odoo17(self):
