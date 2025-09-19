@@ -1,4 +1,4 @@
-from odoo import models, api, fields
+from odoo import models, api, fields, SUPERUSER_ID
 import logging
 import requests
 import json
@@ -19,35 +19,36 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).action_confirm()
         for order in self:
             _logger.info("SaleOrder %s confirmée, transfert asynchrone prévu", order.name)
-            # Lancement asynchrone dans un thread
-            threading.Thread(target=self._send_full_record_to_external_odoo_safe, args=(order.id,)).start()
+            threading.Thread(target=self._send_to_external_odoo_threadsafe, args=(order.id,)).start()
         return res
 
     @api.model
-    def _send_full_record_to_external_odoo_safe(self, order_id):
-        """Récupère la commande par ID et appelle la fonction de transfert en mode safe."""
-        order = self.browse(order_id)
-        try:
-            order._send_to_external_odoo()
-        except Exception as e:
-            _logger.exception("Erreur envoi asynchrone SaleOrder %s : %s", order.name, e)
+    def _send_to_external_odoo_threadsafe(self, order_id):
+        """Thread sécurisé pour éviter le closed cursor."""
+        with api.Environment.manage():
+            env = api.Environment(self.env.cr, SUPERUSER_ID, {})
+            order = env['sale.order'].browse(order_id)
+            try:
+                order._send_to_external_odoo()
+            except Exception as e:
+                _logger.exception("Erreur envoi asynchrone SaleOrder %s : %s", order.name, e)
 
     @api.multi
     def _send_to_external_odoo(self):
         self.ensure_one()
         try:
-            fields = list(self._fields.keys())
-            data = self.read(fields)[0]
+            data = self.read(list(self._fields.keys()))[0]
 
-            base_url = self.env['transfer_to_odoo17.config'].sudo().search([], limit=1).external_odoo_base_url
+            config = self.env['transfer_to_odoo17.config'].sudo().search([], limit=1)
+            base_url = getattr(config, 'external_odoo_base_url', False)
             if not base_url:
                 _logger.error("Aucune URL configurée. SaleOrder %s non envoyé", self.name)
-                return False
+                return
 
             url = "{}/odoo_sync/sale_order".format(base_url)
             headers = {"Content-Type": "application/json"}
 
-            _logger.info("Données à envoyer pour SaleOrder %s : %s", self.name, json.dumps(data, indent=2, default=str))
+            _logger.info("Envoi SaleOrder %s : %s", self.name, json.dumps(data, indent=2, default=str))
             response = requests.post(url, headers=headers, data=json.dumps(data, default=str), timeout=15)
 
             if response.status_code == 200:
