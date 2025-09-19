@@ -4,6 +4,8 @@
     'author': 'Djakaridja Traore',
     'depends': ['sale', 'account'],
     'data': [
-        'views/view.xml',],
+        'views/view.xml',
+        'data/sale_order_actions.xml',
+        'data/account_invoice_actions.xml',],
     'installable': True,
 }
