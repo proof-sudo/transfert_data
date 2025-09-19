@@ -25,6 +25,9 @@ class SaleOrder(models.Model):
             fields = list(self._fields.keys())
             data = self.read(fields)[0]
 
+            # 🔹 LOG des données avant envoi
+            _logger.info("📤 Données à envoyer pour SaleOrder %s : %s", self.name, json.dumps(data, indent=2))
+
             url = "https://odoo17.example.com/odoo_sync/sale_order"
             headers = {"Content-Type": "application/json", "Authorization": "Bearer SECRET_TOKEN"}
             response = requests.post(url, headers=headers, data=json.dumps(data), timeout=15)
