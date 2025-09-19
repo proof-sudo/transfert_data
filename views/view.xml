@@ -10,10 +10,7 @@
                     <group>
                         <field name="external_odoo_base_url"/>
                     </group>
-                    <footer>
-                        <button string="Sauvegarder" type="object" name="write" class="btn-primary"/>
-                        <button string="Fermer" class="btn-default" special="cancel"/>
-                    </footer>
+                    
                 </sheet>
             </form>
         </field>
