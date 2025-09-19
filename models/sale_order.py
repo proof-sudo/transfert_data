@@ -9,17 +9,24 @@ _logger = logging.getLogger('odoo')
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
+    # @api.multi
+    # def action_confirm(self):
+    #     """Override action_confirm pour envoyer la commande vers Odoo17"""
+    #     res = super(SaleOrder, self).action_confirm()
+    #     for order in self:
+    #         try:
+    #             _logger.info("📝 action_confirm appelée pour SaleOrder %s", order.name)
+    #             order._send_full_record_to_odoo17()
+    #         except Exception as e:
+    #             _logger.exception("❌ Erreur transfert SaleOrder %s : %s", order.name, e)
+    #     return res
     @api.multi
     def action_confirm(self):
-        """Override action_confirm pour envoyer la commande vers Odoo17"""
-        res = super(SaleOrder, self).action_confirm()
         for order in self:
-            try:
-                _logger.info("📝 action_confirm appelée pour SaleOrder %s", order.name)
-                order._send_full_record_to_odoo17()
-            except Exception as e:
-                _logger.exception("❌ Erreur transfert SaleOrder %s : %s", order.name, e)
+            order.note = "DEBUG confirm override active"
+        res = super(SaleOrder, self).action_confirm()
         return res
+
 
     def _send_full_record_to_odoo17(self):
         """Envoie toutes les données du sale.order vers Odoo17"""
