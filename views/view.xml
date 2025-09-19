@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Form pour configuration -->
+    <record id="view_res_config_settings_external_odoo_form" model="ir.ui.view">
+        <field name="name">res.config.settings.external.odoo.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="arch" type="xml">
+            <form string="Configuration Odoo Externe">
+                <group string="Odoo Externe">
+                    <field name="external_odoo_base_url" placeholder="https://mon-odoo-externe.com"/>
+                </group>
+                <footer>
+                    <button string="Sauvegarder" class="btn-primary" type="object" name="execute"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir la vue -->
+    <record id="action_external_odoo_config" model="ir.actions.act_window">
+        <field name="name">Odoo Externe</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_res_config_settings_external_odoo_form"/>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Menu principal -->
+    <menuitem id="menu_external_odoo_config_root"
+              name="Odoo Externe"
+              parent="base.menu_administration"
+              sequence="100"/>
+
+    <!-- Menu action -->
+    <menuitem id="menu_external_odoo_config"
+              name="Configuration"
+              parent="menu_external_odoo_config_root"
+              action="action_external_odoo_config"
+              sequence="1"/>
+</odoo>
