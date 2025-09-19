@@ -9,9 +9,7 @@
                 <group string="Odoo Externe">
                     <field name="external_odoo_base_url" placeholder="https://mon-odoo-externe.com"/>
                 </group>
-                <footer>
-                    <button string="Sauvegarder" class="btn-primary" type="object" name="execute"/>
-                </footer>
+              
             </form>
         </field>
     </record>
