@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Formulaire de configuration pour Odoo externe -->
+    <record id="view_res_config_settings_external_odoo" model="ir.ui.view">
+        <field name="name">res.config.settings.external.odoo.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.view_res_config_settings"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='settings']" position="inside">
+                <div class="app_settings_block" data-string="Odoo Externe">
+                    <h2>Configuration Odoo Externe</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <label for="external_odoo_base_url"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <field name="external_odoo_base_url" placeholder="https://mon-odoo-externe.com"/>
+                                <div class="text-muted">URL du serveur Odoo cible (15,16,17, 18, 19…) pour synchronisation des commandes et factures</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
