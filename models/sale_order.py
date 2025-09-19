@@ -11,17 +11,17 @@ class SaleOrder(models.Model):
     
     @api.multi
     def action_confirm(self):
-        # TEST INFALLIBLE : Si ce message n'apparaît pas, la méthode n'est PAS appelée.
-        raise UserError("CONFIRMATION: Ma méthode action_confirm est bien appelée !")
-
-        # Le reste de votre code...
-        res = super(SaleOrder, self).action_confirm()
         for order in self:
-            try:
-                _logger.info("...")
-                order._send_to_odoo17()
-            except Exception as e:
-                _logger.exception("...")
+            _logger.info("Sale Confirm Log: Pré-confirmation pour SO%s (id=%s)", order.name or '?', order.id)
+        try:
+            res = super(SaleOrder, self).action_confirm()
+        except Exception as e:
+            for order in self:
+                _logger.exception("Sale Confirm Log: ERREUR pendant la confirmation de SO%s (id=%s): %s",
+                                  order.name or '?', order.id, e)
+            raise
+        for order in self:
+            _logger.info("Sale Confirm Log: Confirmation effectuée pour SO%s (id=%s)", order.name or '?', order.id)
         return res
 
     # @api.multi
