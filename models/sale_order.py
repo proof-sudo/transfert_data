@@ -3,7 +3,8 @@ import logging
 import requests
 import json
 
-_logger = logging.getLogger('odoo.addons.transfert_data')
+_logger = logging.getLogger('odoo')
+
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
