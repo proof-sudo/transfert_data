@@ -6,13 +6,11 @@ import json
 
 _logger = logging.getLogger(__name__)
 
-
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     @api.multi
     def action_confirm(self):
-        """Override action_confirm pour envoyer la commande vers un Odoo externe"""
         res = super(SaleOrder, self).action_confirm()
         for order in self:
             try:
@@ -27,46 +25,23 @@ class SaleOrder(models.Model):
             fields = list(self._fields.keys())
             data = self.read(fields)[0]
 
-            env = self.env
-            if not env.cr:
-                with api.Environment.manage():
-                    env = api.Environment(self.env.cr, SUPERUSER_ID, {})
-
-            # Récupération de l'URL
-            base_url = env['ir.config_parameter'].sudo().get_param(
-                'transfer_to_odoo17.external_odoo_base_url', default=False
-            )
-
-            # 🔹 Log de l'URL récupérée
+            base_url = self.env['transfer_to_odoo17.config'].sudo().search([], limit=1).external_odoo_base_url
             _logger.info("URL récupérée pour SaleOrder %s : %s", self.name, base_url)
 
             if not base_url:
-                _logger.error(
-                    "Aucune URL configurée (transfer_to_odoo17.external_odoo_base_url). SaleOrder %s non envoyé",
-                    self.name
-                )
+                _logger.error("Aucune URL configurée dans transfer_to_odoo17.config. SaleOrder %s non envoyé", self.name)
                 return False
 
             url = "{}/odoo_sync/sale_order".format(base_url)
             headers = {"Content-Type": "application/json"}
 
-            _logger.info(
-                "Données à envoyer pour SaleOrder %s : %s",
-                self.name,
-                json.dumps(data, indent=2, default=str)
-            )
-
+            _logger.info("Données à envoyer pour SaleOrder %s : %s", self.name, json.dumps(data, indent=2, default=str))
             response = requests.post(url, headers=headers, data=json.dumps(data, default=str), timeout=15)
 
             if response.status_code == 200:
                 _logger.info("SaleOrder %s envoyé avec succès à l'Odoo externe", self.name)
             else:
-                _logger.error(
-                    "Erreur %s envoi SaleOrder %s : %s",
-                    response.status_code,
-                    self.name,
-                    response.text
-                )
+                _logger.error("Erreur %s envoi SaleOrder %s : %s", response.status_code, self.name, response.text)
 
         except Exception as e:
             _logger.exception("Exception lors de l'envoi SaleOrder %s : %s", self.name, e)

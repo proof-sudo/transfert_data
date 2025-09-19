@@ -1,38 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Vue Form pour configuration -->
-    <record id="view_res_config_settings_external_odoo_form" model="ir.ui.view">
-        <field name="name">res.config.settings.external.odoo.form</field>
-        <field name="model">res.config.settings</field>
+    <!-- Formulaire configuration -->
+    <record id="view_transfer_to_odoo_config_form" model="ir.ui.view">
+        <field name="name">transfer_to_odoo17.config.form</field>
+        <field name="model">transfer_to_odoo17.config</field>
         <field name="arch" type="xml">
             <form string="Configuration Odoo Externe">
-                <group string="Odoo Externe">
-                    <field name="external_odoo_base_url" placeholder="https://mon-odoo-externe.com"/>
-                </group>
-              
+                <sheet>
+                    <group>
+                        <field name="external_odoo_base_url"/>
+                    </group>
+                    <footer>
+                        <button string="Sauvegarder" type="object" name="write" class="btn-primary"/>
+                        <button string="Fermer" class="btn-default" special="cancel"/>
+                    </footer>
+                </sheet>
             </form>
         </field>
     </record>
 
-    <!-- Action pour ouvrir la vue -->
-    <record id="action_external_odoo_config" model="ir.actions.act_window">
-        <field name="name">Odoo Externe</field>
-        <field name="res_model">res.config.settings</field>
+    <!-- Action pour ouvrir le formulaire -->
+    <record id="action_transfer_to_odoo_config" model="ir.actions.act_window">
+        <field name="name">Configuration Odoo Externe</field>
+        <field name="res_model">transfer_to_odoo17.config</field>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="view_res_config_settings_external_odoo_form"/>
         <field name="target">current</field>
     </record>
 
     <!-- Menu principal -->
-    <menuitem id="menu_external_odoo_config_root"
-              name="Odoo Externe"
-              parent="base.menu_administration"
-              sequence="100"/>
+    <menuitem id="menu_transfer_to_odoo_root" name="Transfert Odoo"/>
 
-    <!-- Menu action -->
-    <menuitem id="menu_external_odoo_config"
-              name="Configuration"
-              parent="menu_external_odoo_config_root"
-              action="action_external_odoo_config"
-              sequence="1"/>
+    <!-- Menu enfant -->
+    <menuitem id="menu_transfer_to_odoo_config"
+              name="Configuration Odoo Externe"
+              parent="menu_transfer_to_odoo_root"
+              action="action_transfer_to_odoo_config"/>
 </odoo>
