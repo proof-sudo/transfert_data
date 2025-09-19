@@ -2,6 +2,7 @@ from odoo import models, api
 import logging
 import requests
 import json
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger('odoo')
 
@@ -22,10 +23,8 @@ class SaleOrder(models.Model):
     #     return res
     @api.multi
     def action_confirm(self):
-        for order in self:
-            order.note = "DEBUG confirm override active"
-        res = super(SaleOrder, self).action_confirm()
-        return res
+        
+        raise UserError("🚨 DEBUG: action_confirm surcharge active pour %s" % ", ".join(self.mapped('name')))
 
 
     def _send_full_record_to_odoo17(self):
