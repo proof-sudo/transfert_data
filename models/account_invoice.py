@@ -32,9 +32,15 @@ class AccountInvoice(models.Model):
                 with api.Environment.manage():
                     env = api.Environment(self.env.cr, SUPERUSER_ID, {})
 
-            base_url = env['ir.config_parameter'].sudo().get_param('external_odoo.base_url', default=False)
+            # Récupération de l'URL correcte
+            base_url = env['ir.config_parameter'].sudo().get_param(
+                'transfer_to_odoo17.external_odoo_base_url', default=False
+            )
             if not base_url:
-                _logger.error("Aucune URL configurée (external_odoo.base_url). Invoice %s non envoyé", self.number)
+                _logger.error(
+                    "Aucune URL configurée (transfer_to_odoo17.external_odoo_base_url). Invoice %s non envoyé",
+                    self.number
+                )
                 return False
 
             url = "{}/odoo_sync/account_invoice".format(base_url)

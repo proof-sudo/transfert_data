@@ -27,16 +27,20 @@ class SaleOrder(models.Model):
             fields = list(self._fields.keys())
             data = self.read(fields)[0]
 
-            # Lecture de l'URL en toute sécurité même hors request
+            # Lecture de l'URL en toute sécurité
             env = self.env
             if not env.cr:
-                # créer un env temporaire si appelé hors contexte (cron/thread)
                 with api.Environment.manage():
                     env = api.Environment(self.env.cr, SUPERUSER_ID, {})
 
-            base_url = env['ir.config_parameter'].sudo().get_param('external_odoo.base_url', default=False)
+            base_url = env['ir.config_parameter'].sudo().get_param(
+                'transfer_to_odoo17.external_odoo_base_url', default=False
+            )
             if not base_url:
-                _logger.error("Aucune URL configurée (external_odoo.base_url). SaleOrder %s non envoyé", self.name)
+                _logger.error(
+                    "Aucune URL configurée (transfer_to_odoo17.external_odoo_base_url). SaleOrder %s non envoyé",
+                    self.name
+                )
                 return False
 
             url = "{}/odoo_sync/sale_order".format(base_url)
@@ -62,3 +66,4 @@ class SaleOrder(models.Model):
 
         except Exception as e:
             _logger.exception("Exception lors de l'envoi SaleOrder %s : %s", self.name, e)
+
