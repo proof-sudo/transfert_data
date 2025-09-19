@@ -3,6 +3,7 @@
     'version': '1.1',
     'author': 'Djakaridja Traore',
     'depends': ['sale', 'account'],
-    'data': [],
+    'data': [
+        'views/res_config_settings_views.xml',],
     'installable': True,
 }

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, api
+from odoo import models, api, SUPERUSER_ID
 import logging
 import requests
 import json
@@ -24,23 +24,22 @@ class AccountInvoice(models.Model):
     def _send_full_record_to_external_odoo(self):
         self.ensure_one()
         try:
-            # lire tous les champs dynamiquement
             fields = list(self._fields.keys())
             data = self.read(fields)[0]
 
-            # Lecture de l'URL configurable
-            base_url = self.env['ir.config_parameter'].sudo().get_param('external_odoo.base_url', default=False)
+            env = self.env
+            if not env.cr:
+                with api.Environment.manage():
+                    env = api.Environment(self.env.cr, SUPERUSER_ID, {})
+
+            base_url = env['ir.config_parameter'].sudo().get_param('external_odoo.base_url', default=False)
             if not base_url:
-                _logger.error(
-                    "Aucune URL configurée (external_odoo.base_url). Impossible d'envoyer la facture %s",
-                    self.number
-                )
+                _logger.error("Aucune URL configurée (external_odoo.base_url). Invoice %s non envoyé", self.number)
                 return False
 
             url = "{}/odoo_sync/account_invoice".format(base_url)
-            headers = {"Content-Type": "application/json"}  # pas de token
+            headers = {"Content-Type": "application/json"}
 
-            # Log avant envoi
             _logger.info(
                 "Données à envoyer pour Invoice %s : %s",
                 self.number,

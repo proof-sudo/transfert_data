@@ -5,7 +5,7 @@ class ResConfigSettings(models.TransientModel):
 
     external_odoo_base_url = fields.Char(
         string="URL Odoo Externe",
-        help="URL du serveur Odoo cible pour la synchronisation"
+        help="URL du serveur Odoo cible pour synchronisation"
     )
 
     @api.model
