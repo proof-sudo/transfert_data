@@ -27,15 +27,19 @@ class SaleOrder(models.Model):
             fields = list(self._fields.keys())
             data = self.read(fields)[0]
 
-            # Lecture de l'URL en toute sécurité
             env = self.env
             if not env.cr:
                 with api.Environment.manage():
                     env = api.Environment(self.env.cr, SUPERUSER_ID, {})
 
+            # Récupération de l'URL
             base_url = env['ir.config_parameter'].sudo().get_param(
                 'transfer_to_odoo17.external_odoo_base_url', default=False
             )
+
+            # 🔹 Log de l'URL récupérée
+            _logger.info("URL récupérée pour SaleOrder %s : %s", self.name, base_url)
+
             if not base_url:
                 _logger.error(
                     "Aucune URL configurée (transfer_to_odoo17.external_odoo_base_url). SaleOrder %s non envoyé",
@@ -66,4 +70,3 @@ class SaleOrder(models.Model):
 
         except Exception as e:
             _logger.exception("Exception lors de l'envoi SaleOrder %s : %s", self.name, e)
-
