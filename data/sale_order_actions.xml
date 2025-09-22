@@ -4,10 +4,11 @@
         <record id="automated_action_send_sale_order" model="base.automation">
             <field name="name">Envoi automatique vers Odoo 17</field>
             <field name="model_id" ref="sale.model_sale_order"/>
-            <field name="trigger">on_update</field>
+            <field name="trigger">on_write</field>
             <field name="filter_domain">[('state','=','sale'),('transfer_state','=','pending')]</field>
             <field name="state">code</field>
             <field name="code">record.send_to_external_odoo()</field>
         </record>
+
     </data>
 </odoo>
