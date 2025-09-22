@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo noupdate="1">
-
-    <!-- Action Serveur pour envoyer Invoice à l'autre Odoo -->
+    <!-- Action Serveur -->
     <record id="action_send_invoice_external" model="ir.actions.server">
         <field name="name">Envoyer Invoice à Odoo externe</field>
         <field name="model_id" ref="account.model_account_invoice"/>
@@ -14,18 +13,17 @@
         </field>
     </record>
 
-    <!-- Action Automatique après validation -->
+    <!-- Action Automatique -->
     <record id="automated_action_send_invoice" model="base.automation">
         <field name="name">Envoyer Invoice après validation</field>
         <field name="model_id" ref="account.model_account_invoice"/>
-        <field name="trigger">on_update</field>
-        <field name="filter_pre_domain">[('state','=','open'),('transfer_state','=','pending')]</field>
+        <field name="trigger">on_write</field>
+        <field name="filter_domain">[('state','=','open'),('transfer_state','=','pending')]</field>
         <field name="state">code</field>
         <field name="code">
             <![CDATA[
-                action = env.ref('transfert_to_data.action_send_invoice_external').sudo().run()
+                action = env.ref('invoice_transfer_to_odoo17.action_send_invoice_external').sudo().run()
             ]]>
         </field>
     </record>
-
 </odoo>
