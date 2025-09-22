@@ -34,7 +34,7 @@ class SaleOrder(models.Model):
                 url = "{}/odoo_sync/sale_order".format(base_url)
                 headers = {"Content-Type": "application/json"}
 
-                _logger.info("Données à envoyer pour la commande %s : %s", order.name, json.dumps(data, indent=2, default=str))
+                _logger.info("Données à envoyer pour la commande %s : URL :: %s :: %s", order.name, url, json.dumps(data, indent=2, default=str))
                 response = requests.post(url, headers=headers, data=json.dumps(data, default=str), timeout=15)
 
                 if response.status_code == 200:
