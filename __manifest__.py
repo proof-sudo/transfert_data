@@ -2,7 +2,7 @@
     'name': 'Transfer to Odoo17 with Retry',
     'version': '1.1',
     'author': 'Djakaridja Traore',
-    'depends': ['sale', 'account'],
+    'depends': ['sale', 'account','base_automation'],
     'data': [
         'views/view.xml',
         'data/sale_order_actions.xml',
