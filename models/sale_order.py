@@ -25,13 +25,28 @@ class SaleOrder(models.Model):
     def send_to_external_odoo(self):
         for order in self:
             try:
+                # Dictionnaire de base pour la commande
                 data = order.read(list(order._fields.keys()))[0]
-                # base_url = self.env['transfer_to_odoo17.config'].sudo().search([], limit=1).external_odoo_base_url
-                base_url = "https://proof-sudo-neurones-project.odoo.com"
-                if not base_url:
-                    _logger.error("Aucune URL configurée. Commande %s non envoyée", order.name)
-                    continue
 
+                # Construction des lignes avec les infos produit/qty/pu/taxe
+                order_lines_data = []
+                for line in order.order_line:
+                    line_data = {
+                        'product_id': [line.product_id.id, line.product_id.name] if line.product_id else [False, 'Produit inconnu'],
+                        'product_uom_qty': line.product_uom_qty,
+                        'price_unit': line.price_unit,
+                        'taxes_id': [(6, 0, line.tax_id.ids)] if line.tax_id else [],
+                        'name': line.name,
+                        'amount_total': line.price_subtotal,
+                    }
+                    order_lines_data.append(line_data)
+
+                data['order_lines_data'] = order_lines_data  # Ajout des lignes complètes
+                # Supprimer l'ancien order_line qui ne contient qu'un ID
+                if 'order_line' in data:
+                    del data['order_line']
+
+                base_url = "https://proof-sudo-neurones-project.odoo.com"
                 url = "{}/odoo_sync/sale_order".format(base_url)
                 headers = {"Content-Type": "application/json"}
 
@@ -46,3 +61,4 @@ class SaleOrder(models.Model):
 
             except Exception as e:
                 _logger.exception("Exception lors de l'envoi de la commande %s : %s", order.name, e)
+
