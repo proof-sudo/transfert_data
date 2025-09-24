@@ -10,7 +10,9 @@ class TransferToOdooConfig(models.Model):
     external_odoo_base_url = fields.Char(
         string="URL Odoo Externe",
         required=True,
-        help="URL du serveur Odoo cible pour synchronisation des commandes et factures"
+        help="URL du serveur Odoo cible pour synchronisation des commandes et factures",
+        store=True
+        
     )
     
     def action_mark_existing_done(self):
