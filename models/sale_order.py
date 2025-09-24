@@ -26,7 +26,8 @@ class SaleOrder(models.Model):
         for order in self:
             try:
                 data = order.read(list(order._fields.keys()))[0]
-                base_url = self.env['transfer_to_odoo17.config'].sudo().search([], limit=1).external_odoo_base_url
+                # base_url = self.env['transfer_to_odoo17.config'].sudo().search([], limit=1).external_odoo_base_url
+                base_url = "https://proof-sudo-neurones-project.odoo.com"
                 if not base_url:
                     _logger.error("Aucune URL configurée. Commande %s non envoyée", order.name)
                     continue
