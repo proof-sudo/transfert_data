@@ -29,7 +29,7 @@ class AccountInvoice(models.Model):
                 data = invoice.read(list(invoice._fields.keys()))[0]
                 config = self.env['transfer_to_odoo17.config'].sudo().search([], limit=1)
                 # base_url = config.external_odoo_base_url if config else False
-                base_url = "https://proof-sudo-neurones-project.odoo.com"
+                base_url = "https://proof-sudo-neurones-project-test-24333026.dev.odoo.com"
 
                 if not base_url:
                     _logger.error("Aucune URL configurée. Facture %s non envoyée", invoice.number)
