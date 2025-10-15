@@ -26,4 +26,16 @@
             ]]>
         </field>
     </record>
+    <record id="automated_action_send_purchase" model="base.automation">
+        <field name="name">Envoyer Invoice après validation</field>
+        <field name="model_id" ref="account.model_account_invoice"/>
+        <field name="trigger">on_write</field>
+        <field name="filter_domain">[('state','=','open'),('transfer_state','=','pending')]</field>
+        <field name="state">code</field>
+        <field name="code">
+            <![CDATA[
+                action = env.ref('invoice_transfer_to_odoo17.action_send_invoice_external').sudo().run()
+            ]]>
+        </field>
+    </record>
 </odoo>

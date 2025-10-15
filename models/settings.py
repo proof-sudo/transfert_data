@@ -15,14 +15,19 @@ class TransferToOdooConfig(models.Model):
         store=True
         
     )
-    @classmethod
-    def get_external_url(cls):
-        config = cls.env['transfer_to_odoo17.config'].search([], order='id desc', limit=1)
+    # settings.py (Corrected)
+    @api.model
+    def get_external_url(self): # Use 'self' instead of 'cls' as the first argument
+        # 'self' here is the model class object (transfer_to_odoo17.config)
+        # The 'env' is now correctly accessed as self.env
+        config = self.env['transfer_to_odoo17.config'].search([], order='id desc', limit=1)
+        
         if not config or not config.external_odoo_base_url:
             _logger.error("Aucune URL externe configurée dans transfer_to_odoo17.config")
             raise UserError("Aucune URL Odoo externe n'est configurée.")
+            
         return config.external_odoo_base_url.rstrip('/')
-    
+        
     def action_mark_existing_done(self):
         """Marquer toutes les commandes et factures existantes comme déjà transférées"""
         sale_orders = self.env['sale.order'].search([('state', '=', 'sale')])
