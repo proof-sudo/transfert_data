@@ -2,13 +2,28 @@
 <odoo>
 
     <data noupdate="1">
+        <record id="purchase.field_purchase_order_state" model="ir.model.fields">
+            <field name="name">state</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+        </record>
+
         <record id="automated_action_send_purchase" model="base.automation">
             <field name="name">Envoi automatique vers Odoo 17 de Purchase</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
+            
             <field name="trigger">on_write</field>
+            
+            <field name="trigger_field_ids" eval="[(6, 0, [ref('purchase.field_purchase_order_state')])]"/>
+            
             <field name="filter_domain">[('state','=','purchase')]</field>
+            
             <field name="state">code</field>
-            <field name="code">record.send_to_external_odoo_purchase()</field>
+            
+            <field name="code">
+for record in records:
+    if record.transfer_state == 'pending':
+        record.send_to_external_odoo_purchase()
+            </field>
         </record>
 
     </data>
