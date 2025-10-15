@@ -47,7 +47,7 @@ class SaleOrder(models.Model):
                     del data['order_line']
 
                 base_url = self.env['transfer_to_odoo17.config'].get_external_url()
-                url = "%s/odoo_sync/purchase_order" % base_url
+                url = "%s/odoo_sync/sale_order" % base_url
                 headers = {"Content-Type": "application/json"}
 
                 _logger.info("Données à envoyer pour la commande %s : URL :: %s :: %s", order.name, url, json.dumps(data, indent=2, default=str))
