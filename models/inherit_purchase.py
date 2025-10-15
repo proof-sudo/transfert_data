@@ -16,7 +16,6 @@ class PurchaseOrder(models.Model):
         ('error', 'Erreur'),
     ], string="Statut d'envoi", default='pending')
 
-    external_response = fields.Text("Réponse du serveur externe")
 
     @api.multi
     def button_confirm(self):
@@ -27,43 +26,46 @@ class PurchaseOrder(models.Model):
         return res
 
     @api.multi
-    def button_send_data(self):
+    def send_to_external_odoo_purchase(self):
         for order in self:
             try:
-                # 1. Lire les données de la commande
-                order_data = order.read()[0]
+                # Dictionnaire de base pour le bon de commande fournisseur
+                data = order.read(list(order._fields.keys()))[0]
 
-                # 2. Lire les lignes de commande
-                order_lines = []
-                for line in order.order_line:
-                    line_data = line.read()[0]
-                    order_lines.append(line_data)
+                # Construction des lignes d'achat
+                order_lines_data = []
+                for line in order.order_line: # Le champ reste 'order_line'
+                    line_data = {
+                        # Champs clés pour une ligne d'achat :
+                        'product_id': [line.product_id.id, line.product_id.name] if line.product_id else [False, 'Produit inconnu'],
+                        'product_qty': line.product_qty,        # Changement : utilise 'product_qty' au lieu de 'product_uom_qty'
+                        'price_unit': line.price_unit,
+                        # Le champ taxe est 'taxes_id' sur purchase.order.line
+                        'taxes_id': [(6, 0, line.taxes_id.ids)] if line.taxes_id else [],
+                        'name': line.name,
+                        'date_planned': str(line.date_planned),  # Optionnel: Ajout de la date planifiée, convertie en string
+                        'amount_total': line.price_subtotal,
+                    }
+                    order_lines_data.append(line_data)
 
-                # 3. Ajouter les lignes au dictionnaire principal
-                order_data['order_lines'] = order_lines
+                data['order_lines_data'] = order_lines_data
+                if 'order_line' in data:
+                    del data['order_line']
 
-                # 4. Récupérer l'URL du serveur externe
+                # Récupération de l'URL du service externe
+                # NOTE : Vous utiliserez probablement une URL différente pour l'achat !
                 base_url = self.env['transfer_to_odoo17.config'].get_external_url()
-                url = "%s/odoo_sync/purchase_order" % base_url
+                url = "%s/odoo_sync/purchase_order" % base_url # Changement d'endpoint (suggestion)
                 headers = {"Content-Type": "application/json"}
 
-                # 5. Debug
-                _logger.info("Envoi du bon de commande fournisseur %s vers %s", order.name, url)
-                _logger.debug("Payload JSON : %s", json.dumps(order_data, indent=2, default=str))
-
-                # 6. Envoi de la requête POST
-                response = requests.post(url, headers=headers, data=json.dumps(order_data, default=str), timeout=20)
+                _logger.info("Données à envoyer pour le BCF %s : URL :: %s :: %s", order.name, url, json.dumps(data, indent=2, default=str))
+                response = requests.post(url, headers=headers, data=json.dumps(data, default=str), timeout=15)
 
                 if response.status_code == 200:
-                    _logger.info("Commande fournisseur %s envoyée avec succès", order.name)
+                    _logger.info("BCF %s envoyé avec succès", order.name)
                     order.transfer_state = 'done'
                 else:
-                    _logger.error("Erreur %s : %s", response.status_code, response.text)
-                    order.transfer_state = 'error'
-
-                order.external_response = response.text
+                    _logger.error("Erreur %s lors de l'envoi du BCF %s : %s", response.status_code, order.name, response.text)
 
             except Exception as e:
-                _logger.exception("Exception lors de l'envoi de la commande fournisseur %s", order.name)
-                order.transfer_state = 'error'
-                order.external_response = str(e)
+                _logger.exception("Exception lors de l'envoi du BCF %s : %s", order.name, e)
