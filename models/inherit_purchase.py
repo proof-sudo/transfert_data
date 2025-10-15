@@ -22,7 +22,7 @@ class PurchaseOrder(models.Model):
     def button_confirm(self):
         res = super(PurchaseOrder, self).button_confirm()
         for order in self:
-            _logger.info("Commande %s confirmée, transfert prévu via Action Serveur", order.name)
+            _logger.info("Commande FOURNISSEUR  %s confirmée, transfert prévu via Action Serveur", order.name)
             order.transfer_state = 'pending'
         return res
 
