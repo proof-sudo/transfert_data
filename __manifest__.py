@@ -6,6 +6,8 @@
     'data': [
         'views/view.xml',
         'data/sale_order_actions.xml',
-        'data/account_invoice_actions.xml',],
+        'data/account_invoice_actions.xml',
+        'data/purchase_action.xml',
+    ],
     'installable': True,
 }

@@ -11,15 +11,4 @@
         </record>
 
     </data>
-    <data noupdate="1">
-        <record id="automated_action_send_purchase" model="base.automation">
-            <field name="name">Envoi automatique vers Odoo 17 de Purchase</field>
-            <field name="model_id" ref="purchase.model_purchase_order"/>
-            <field name="trigger">on_write</field>
-            <field name="filter_domain">[('state','=','purchase'),('transfer_state','=','pending')]</field>
-            <field name="state">code</field>
-            <field name="code">record.button_send_data()</field>
-        </record>
-
-    </data>
 </odoo>
