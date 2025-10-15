@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
 import logging
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger('odoo')
+
 class TransferToOdooConfig(models.Model):
     _name = 'transfer_to_odoo17.config'
     _description = "Configuration Odoo Externe"
@@ -13,6 +15,13 @@ class TransferToOdooConfig(models.Model):
         store=True
         
     )
+    @classmethod
+    def get_external_url(cls):
+        config = cls.env['transfer_to_odoo17.config'].search([], limit=1)
+        if not config or not config.external_odoo_base_url:
+            _logger.error("Aucune URL externe configurée dans transfer_to_odoo17.config")
+            raise UserError("Aucune URL Odoo externe n'est configurée.")
+        return config.external_odoo_base_url.rstrip('/')
     
     def action_mark_existing_done(self):
         """Marquer toutes les commandes et factures existantes comme déjà transférées"""

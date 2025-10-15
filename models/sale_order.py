@@ -46,7 +46,7 @@ class SaleOrder(models.Model):
                 if 'order_line' in data:
                     del data['order_line']
 
-                base_url = "https://proof-sudo-neurones-project-test-24333026.dev.odoo.com"
+                base_url = "https://proof-sudo-neurones-project.odoo.com"
                 url = "{}/odoo_sync/sale_order".format(base_url)
                 headers = {"Content-Type": "application/json"}
 
