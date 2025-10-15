@@ -19,12 +19,21 @@
             </form>
         </field>
     </record>
+    <record id="view_transfer_to_odoo_config_tree" model="ir.ui.view">
+        <field name="name">transfer_to_odoo17.config.tree</field>
+        <field name="model">transfer_to_odoo17.config</field>
+        <field name="arch" type="xml">
+            <tree string="Configuration Odoo Externe">
+                <field name="external_odoo_base_url"/>
+            </tree>
+        </field>
+    </record>
 
     <!-- Action pour ouvrir le formulaire -->
     <record id="action_transfer_to_odoo_config" model="ir.actions.act_window">
         <field name="name">Configuration Odoo Externe</field>
         <field name="res_model">transfer_to_odoo17.config</field>
-        <field name="view_mode">form</field>
+        <field name="view_mode">tree,form</field>
         <field name="target">current</field>
     </record>
 
