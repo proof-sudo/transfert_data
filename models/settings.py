@@ -17,7 +17,7 @@ class TransferToOdooConfig(models.Model):
     )
     @classmethod
     def get_external_url(cls):
-        config = cls.env['transfer_to_odoo17.config'].search([], limit=1)
+        config = cls.env['transfer_to_odoo17.config'].search([], order='id desc', limit=1)
         if not config or not config.external_odoo_base_url:
             _logger.error("Aucune URL externe configurée dans transfer_to_odoo17.config")
             raise UserError("Aucune URL Odoo externe n'est configurée.")
