@@ -2,23 +2,18 @@
 <odoo>
     <data noupdate="1">
         
-        <!-- =================================================== -->
-        <!-- ACTION SERVEUR : Envoyer les commandes vers Odoo 17 -->
-        <!-- =================================================== -->
+        <!-- Action serveur pour envoyer les commandes vers Odoo 17 -->
         <record id="action_server_send_purchase_to_external" model="ir.actions.server">
             <field name="name">Envoyer la commande fournisseur vers Odoo 17</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
             <field name="state">code</field>
             <field name="code">
-# Action serveur pour envoyer les commandes d'achat vers Odoo 17 externe
 if records:
     records.send_to_external_odoo_purchase()
             </field>
         </record>
 
-        <!-- =================================================== -->
-        <!-- RÈGLE AUTOMATIQUE : Après confirmation de commande -->
-        <!-- =================================================== -->
+        <!-- Règle automatique après confirmation de commande -->
         <record id="purchase_order_auto_send_rule" model="base.automation">
             <field name="name">Envoi auto commande fournisseur vers Odoo 17</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
@@ -26,23 +21,18 @@ if records:
             <field name="active">True</field>
             <field name="state">code</field>
             <field name="code">
-# Déclenché quand une commande est confirmée (state = purchase) ET transfer_state = pending
 if record.state == 'purchase' and record.transfer_state == 'pending':
-    # Lance l'action serveur pour envoyer vers Odoo 17
     record.with_delay(priority=10).send_to_external_odoo_purchase()
             </field>
             <field name="filter_pre_domain">[]</field>
         </record>
 
-        <!-- =================================================== -->
-        <!-- CRON : Retry des commandes en erreur -->
-        <!-- =================================================== -->
+        <!-- Cron pour retry des commandes en erreur -->
         <record id="ir_cron_retry_failed_purchase_transfer" model="ir.cron">
             <field name="name">Retry commandes fournisseur en erreur</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
             <field name="state">code</field>
             <field name="code">
-# Cron pour réessayer l'envoi des commandes en erreur
 model = env['purchase.order']
 failed_orders = model.search([
     ('transfer_state', '=', 'error'),
@@ -51,7 +41,7 @@ failed_orders = model.search([
 ], limit=20)
 
 if failed_orders:
-    _logger.info("🔄 Cron: Retry de %s commandes fournisseur en erreur", len(failed_orders))
+    _logger.info("Cron: Retry de %s commandes fournisseur en erreur", len(failed_orders))
     failed_orders.with_delay(priority=5).send_to_external_odoo_purchase()
             </field>
             <field name="interval_number">10</field>
@@ -61,24 +51,21 @@ if failed_orders:
             <field name="active">True</field>
         </record>
 
-        <!-- =================================================== -->
-        <!-- CRON : Nettoyage des anciennes commandes -->
-        <!-- =================================================== -->
+        <!-- Cron pour nettoyage des anciennes commandes -->
         <record id="ir_cron_clean_old_purchase_transfers" model="ir.cron">
             <field name="name">Nettoyage historique transfert commandes</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
             <field name="state">code</field>
             <field name="code">
-# Cron pour nettoyer l'historique des transferts (garder 30 jours)
 cutoff_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')
 env.cr.execute("""
     UPDATE purchase_order 
     SET transfer_state = 'done' 
     WHERE transfer_state IN ('pending', 'error') 
-    AND write_date < %s 
+    AND write_date &lt; %s 
     AND state = 'purchase'
 """, (cutoff_date,))
-_logger.info("🧹 Nettoyage historique transfert commandes effectué")
+_logger.info("Nettoyage historique transfert commandes effectué")
             </field>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
