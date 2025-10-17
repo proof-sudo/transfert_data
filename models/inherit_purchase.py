@@ -24,10 +24,10 @@ class PurchaseOrder(models.Model):
 
     @api.multi
     def send_to_external_odoo_purchase(self):
-        """Envoi IMMÉDIAT vers Odoo 17"""
+        """Envoi IMMÉDIAT vers Odoo 18"""
         for order in self:
             try:
-                # Préparer les données
+                # Préparer les données de base
                 data = order.read(list(order._fields.keys()))[0]
 
                 # Construction des lignes d'achat
@@ -44,9 +44,28 @@ class PurchaseOrder(models.Model):
                     }
                     order_lines_data.append(line_data)
 
+                # Ajouter les données supplémentaires
                 data['order_lines_data'] = order_lines_data
+                
+                # Ajouter partner_ref s'il existe
+                if order.partner_ref:
+                    data['partner_ref'] = order.partner_ref
+                
+                # Ajouter les informations du projet s'il existe
+                if order.project_id:
+                    data['project_data'] = {
+                        'id': order.project_id.id,
+                        'name': order.project_id.name,
+                        'code': order.project_id.code if hasattr(order.project_id, 'code') else '',
+                        'description': order.project_id.description if hasattr(order.project_id, 'description') else '',
+                        'partner_id': [order.project_id.partner_id.id, order.project_id.partner_id.name] if order.project_id.partner_id else False,
+                    }
+                
+                # Supprimer les champs inutiles pour l'export
                 if 'order_line' in data:
                     del data['order_line']
+                if 'project_id' in data:
+                    del data['project_id']
 
                 # Récupération de l'URL
                 base_url = self.env['transfer_to_odoo17.config'].get_external_url()
