@@ -3,7 +3,7 @@
     <data noupdate="1">
         
         <!-- Action serveur pour envoyer les commandes vers Odoo 17 -->
-        <record id="action_server_send_purchase_to_external" model="ir.actions.server">
+        <record id="action_server_send_purchase_to_externalss" model="ir.actions.server">
             <field name="name">Envoyer commande vers Odoo 17</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
             <field name="state">code</field>
@@ -14,16 +14,14 @@ if records:
         </record>
 
         <!-- Règle automatique déclenchée après confirmation -->
-        <record id="purchase_order_auto_send_rule" model="base.automation">
+        <record id="purchase_order_auto_send_ruless" model="base.automation">
             <field name="name">Envoi auto commande vers Odoo 17</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
             <field name="trigger">on_create_or_write</field>
             <field name="active">True</field>
             <field name="state">code</field>
             <field name="code">
-# Se déclenche quand une commande est confirmée
 if record.state == 'purchase' and record.transfer_state == 'pending':
-    # Lance immédiatement l'envoi sur l'enregistrement courant
     record.send_to_external_odoo_purchase()
             </field>
             <field name="filter_pre_domain">[]</field>
