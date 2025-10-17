@@ -20,6 +20,7 @@ class PurchaseOrder(models.Model):
         res = super(PurchaseOrder, self).button_confirm()
         # Marquer comme pending - la règle auto déclenchera l'envoi
         self.write({'transfer_state': 'pending'})
+        _logger.info("✅ BCF %s confirmée, marquée pour envoi IMMÉDIAT", self.mapped('name'))
         return res
 
     @api.multi
