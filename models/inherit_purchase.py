@@ -52,13 +52,11 @@ class PurchaseOrder(models.Model):
                     data['partner_ref'] = order.partner_ref
                 
                 # Ajouter les informations du projet s'il existe
-                if order.project_id:
-                    data['project_data'] = {
-                        'id': order.project_id.id,
-                        'name': order.project_id.name,
-                        'code': order.project_id.code if hasattr(order.project_id, 'code') else '',
-                        'description': order.project_id.description if hasattr(order.project_id, 'description') else '',
-                        'partner_id': [order.project_id.partner_id.id, order.project_id.partner_id.name] if order.project_id.partner_id else False,
+                if order.dossier_id:
+                    data['dossier_data'] = {
+                        'name': order.dossier_id.name,
+                        'project_name': order.dossier_id.project_name if hasattr(order.dossier_id, 'project_name') else order.dossier_id.name,
+                        'user_id': [order.dossier_id.user_id.id, order.dossier_id.user_id.name] if order.dossier_id.user_id else False,
                     }
                 
                 # Supprimer les champs inutiles pour l'export
