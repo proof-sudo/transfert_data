@@ -16,19 +16,18 @@ class PurchaseOrder(models.Model):
 
     @api.multi
     def button_confirm(self):
-        """Confirme la commande et marque pour envoi"""
+        """Confirme la commande et marque pour envoi IMMÉDIAT"""
         res = super(PurchaseOrder, self).button_confirm()
-        for order in self:
-            _logger.info("Commande FOURNISSEUR %s confirmée, transfert programmé", order.name)
-            order.transfer_state = 'pending'
+        # Marquer comme pending - la règle auto déclenchera l'envoi
+        self.write({'transfer_state': 'pending'})
         return res
 
     @api.multi
     def send_to_external_odoo_purchase(self):
-        """Méthode appelée par le cron pour envoyer les commandes en attente"""
+        """Envoi IMMÉDIAT vers Odoo 17"""
         for order in self:
             try:
-                # Dictionnaire de base pour le bon de commande fournisseur
+                # Préparer les données
                 data = order.read(list(order._fields.keys()))[0]
 
                 # Construction des lignes d'achat
@@ -49,12 +48,12 @@ class PurchaseOrder(models.Model):
                 if 'order_line' in data:
                     del data['order_line']
 
-                # Récupération de l'URL du service externe
+                # Récupération de l'URL
                 base_url = self.env['transfer_to_odoo17.config'].get_external_url()
                 url = "%s/odoo_sync/purchase_order" % base_url
                 headers = {"Content-Type": "application/json"}
 
-                _logger.info("OPERATION Envoi BCF %s vers %s", order.name, url)
+                _logger.info("🚀 Envoi IMMÉDIAT BCF %s vers %s", order.name, url)
                 response = requests.post(url, headers=headers, data=json.dumps(data, default=str), timeout=15)
 
                 if response.status_code == 200:

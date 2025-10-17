@@ -2,77 +2,31 @@
 <odoo>
     <data noupdate="1">
         
-        <!-- Cron pour envoyer les commandes en attente -->
-        <record id="ir_cron_send_pending_purchases" model="ir.cron">
-            <field name="name">Envoyer les commandes fournisseur en attente</field>
+        <!-- Action serveur pour envoyer les commandes vers Odoo 17 -->
+        <record id="action_server_send_purchase_to_external" model="ir.actions.server">
+            <field name="name">Envoyer commande vers Odoo 17</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
             <field name="state">code</field>
             <field name="code">
-# Chercher les commandes confirmées en attente d'envoi
-model = env['purchase.order']
-pending_orders = model.search([
-    ('transfer_state', '=', 'pending'),
-    ('state', '=', 'purchase')
-], limit=10)
-
-if pending_orders:
-    _logger.info("Envoi de %s commandes fournisseur en attente", len(pending_orders))
-    pending_orders.send_to_external_odoo_purchase()
+if records:
+    records.send_to_external_odoo_purchase()
             </field>
-            <field name="interval_number">2</field>
-            <field name="interval_type">minutes</field>
-            <field name="numbercall">-1</field>
-            <field name="doall">False</field>
-            <field name="active">True</field>
         </record>
 
-        <!-- Cron pour retry des commandes en erreur -->
-        <record id="ir_cron_retry_failed_purchase_transfer" model="ir.cron">
-            <field name="name">Retry commandes fournisseur en erreur</field>
+        <!-- Règle automatique déclenchée après confirmation -->
+        <record id="purchase_order_auto_send_rule" model="base.automation">
+            <field name="name">Envoi auto commande vers Odoo 17</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="trigger">on_create_or_write</field>
+            <field name="active">True</field>
             <field name="state">code</field>
             <field name="code">
-# Chercher les commandes en erreur (moins de 24h)
-model = env['purchase.order']
-failed_orders = model.search([
-    ('transfer_state', '=', 'error'),
-    ('state', '=', 'purchase'),
-    ('write_date', '>=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))
-], limit=10)
-
-if failed_orders:
-    _logger.info("Retry de %s commandes fournisseur en erreur", len(failed_orders))
-    failed_orders.send_to_external_odoo_purchase()
+# Se déclenche quand une commande est confirmée
+if record.state == 'purchase' and record.transfer_state == 'pending':
+    # Lance immédiatement l'envoi sur l'enregistrement courant
+    record.send_to_external_odoo_purchase()
             </field>
-            <field name="interval_number">10</field>
-            <field name="interval_type">minutes</field>
-            <field name="numbercall">-1</field>
-            <field name="doall">False</field>
-            <field name="active">True</field>
-        </record>
-
-        <!-- Cron pour nettoyage des anciennes commandes -->
-        <record id="ir_cron_clean_old_purchase_transfers" model="ir.cron">
-            <field name="name">Nettoyage historique transfert commandes</field>
-            <field name="model_id" ref="purchase.model_purchase_order"/>
-            <field name="state">code</field>
-            <field name="code">
-# Nettoyer les anciennes entrées (plus de 7 jours)
-cutoff_date = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')
-env.cr.execute("""
-    UPDATE purchase_order 
-    SET transfer_state = 'done' 
-    WHERE transfer_state IN ('pending', 'error') 
-    AND write_date &lt; %s 
-    AND state = 'purchase'
-""", (cutoff_date,))
-_logger.info("Nettoyage historique transfert commandes effectué")
-            </field>
-            <field name="interval_number">1</field>
-            <field name="interval_type">days</field>
-            <field name="numbercall">-1</field>
-            <field name="doall">False</field>
-            <field name="active">True</field>
+            <field name="filter_pre_domain">[]</field>
         </record>
 
     </data>
