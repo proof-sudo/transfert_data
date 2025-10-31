@@ -11,7 +11,7 @@
                             string="Lier à un Projet Odoo Externe"
                             type="object"
                             class="btn-secondary"
-                            attrs="{'invisible': [('transfer_state', '!=', 'pending')]}"/>
+                            attrs="{'invisible': [('transfer_state', '=', 'done')]}"/>
                     <field name="transfer_state" invisible="1"/>
                 </xpath>
                 
