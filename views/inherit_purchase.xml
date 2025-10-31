@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="purchase_order_form_inherit" model="ir.ui.view">
+            <field name="name">purchase.order.form.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="button_link_to_external_odoo_purchase"
+                            string="Lier à un Projet Odoo Externe"
+                            type="object"
+                            class="btn-secondary"
+                            attrs="{'invisible': [('transfer_state', '!=', 'pending')]}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
