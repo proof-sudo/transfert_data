@@ -14,13 +14,7 @@ class PurchaseOrder(models.Model):
         ('error', 'Erreur'),
     ], string="Statut d'envoi", default='pending')
 
-    @api.multi
-    def button_confirm(self):
-        """Confirme la commande et marque pour envoi IMMÉDIAT"""
-        res = super(PurchaseOrder, self).button_confirm()
-        # Marquer comme pending - la règle auto déclenchera l'envoi
-        self.write({'transfer_state': 'pending'})
-        return res
+    
 
     @api.multi
     def send_to_external_odoo_purchase(self):
@@ -56,7 +50,9 @@ class PurchaseOrder(models.Model):
                     data['dossier_data'] = {
                         'name': order.dossier_id.name,
                         'project_name': order.dossier_id.project_name if hasattr(order.dossier_id, 'project_name') else order.dossier_id.name,
+                        'ref_bc_customer': order.dossier_id.ref_bc_customer if hasattr(order.dossier_id, 'ref_bc_customer') else order.dossier_id.name,
                         'user_id': [order.dossier_id.user_id.id, order.dossier_id.user_id.name] if order.dossier_id.user_id else False,
+                        'client_id': [order.dossier_id.partner_id.id, order.dossier_id.partner_id.name] if order.dossier_id.partner_id else False,
                     }
                 
                 # Supprimer les champs inutiles pour l'export
@@ -91,3 +87,9 @@ class PurchaseOrder(models.Model):
             except Exception as e:
                 _logger.exception("❌ Exception pour BCF %s: %s", order.name, str(e))
                 order.transfer_state = 'error'
+    
+    def button_link_to_external_odoo_purchase(self):
+        """Bouton manuel pour envoi IMMÉDIAT vers Odoo 18"""
+        self.write({'transfer_state': 'pending'})
+        self.send_to_external_odoo_purchase()
+                
