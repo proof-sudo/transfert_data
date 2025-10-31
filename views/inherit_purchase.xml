@@ -12,7 +12,9 @@
                             type="object"
                             class="btn-secondary"
                             attrs="{'invisible': [('transfer_state', '!=', 'pending')]}"/>
+                    <field name="transfer_state" invisible="1"/>
                 </xpath>
+                
             </field>
         </record>
     </data>
